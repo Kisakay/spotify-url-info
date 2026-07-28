@@ -24,20 +24,30 @@ npm install github:Kisakay/spotify-url-info#v1.0.0
 
 ## Usage
 
-You need to provide a `fetch` implementation:
+This package uses the runtime's native `fetch` implementation.
+
+Requirements:
+
+* Node.js >= 18
+* Bun
 
 ```ts
-import fetch from "isomorphic-unfetch";
-import spotifyUrlInfo from "spotify-url-info";
-
-const { getData, getPreview, getTracks, getDetails } = spotifyUrlInfo(fetch);
+import {
+  getData,
+  getPreview,
+  getTracks,
+  getDetails
+} from "spotify-url-info";
 ```
 
 There are four functions:
 
-* **getData** — full data, close to the shape returned by the Spotify API.
+* **getData** — full data, close to the shape returned by Spotify's embed page.
+
 * **getPreview** — normalized fields (title, artist, image, audio, link...), same shape regardless of resource type (track, album, artist, playlist).
-* **getTracks** — array of tracks (max 100), raw shape from Spotify.
+
+* **getTracks** — array of tracks (max 100), parsed from Spotify data.
+
 * **getDetails** — both `getPreview` and `getTracks` in a single request.
 
 All methods take a Spotify URL as the first argument:
@@ -55,8 +65,8 @@ const data = await getPreview(
   "https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas",
   {
     headers: {
-      "user-agent": "googlebot",
-    },
+      "user-agent": "googlebot"
+    }
   }
 );
 ```
@@ -78,7 +88,9 @@ Example output:
 }
 ```
 
-A field you can't retrieve will be `undefined`. There is no strict guarantee on the shape of this data since it depends on scraping Spotify's embed pages — handle it defensively.
+A field you can't retrieve will be `undefined`.
+
+There is no strict guarantee on the shape of this data since it depends on scraping Spotify's embed pages — handle it defensively.
 
 ## Versioning
 
@@ -98,7 +110,9 @@ npm install github:Kisakay/spotify-url-info#main
 
 ## Note
 
-This version has been reviewed and typed by Claude: types added throughout, error handling fixed, and packaged as ESM/TypeScript.
+This package has been reviewed and typed with TypeScript, including type definitions, error handling, and ESM packaging.
+
+The package does not use the Spotify API. It extracts metadata from Spotify embed pages.
 
 ## License
 

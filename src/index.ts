@@ -110,8 +110,6 @@ interface Details {
   tracks: Track[]
 }
 
-type FetchLike = (url: string, opts?: any) => Promise<{ text: () => Promise<string> }>
-
 class SpotifyParseError extends TypeError {
   html?: string
 }
@@ -178,15 +176,6 @@ const parseData = (html: string): SpotifyEntityData => {
 
   return throwError(ERROR.NOT_DATA, html)
 }
-
-const createGetData =
-  (fetch: FetchLike) =>
-  async (url: string, opts?: any): Promise<SpotifyEntityData> => {
-    const embedURL = getParsedUrl(url)
-    const response = await fetch(embedURL, opts)
-    const text = await response.text()
-    return parseData(text)
-  }
 
 function getParsedUrl (url: string): string {
   try {
@@ -268,22 +257,39 @@ const normalizeData = ({ data }: { data: SpotifyEntityData }): SpotifyEntityData
 }
 
 // ---- Public API ----
+// Uses the runtime's native `fetch` (Node >= 18 or Bun), no factory/DI needed.
 
-export default (fetch: FetchLike) => {
-  const getData = createGetData(fetch)
+async function getData (url: string, opts?: RequestInit): Promise<SpotifyEntityData> {
+  const embedURL = getParsedUrl(url)
+  const response = await fetch(embedURL, opts)
+  const text = await response.text()
+  return parseData(text)
+}
+
+async function getPreviewFromUrl (url: string, opts?: RequestInit): Promise<Preview> {
+  const data = await getData(url, opts)
+  return getPreview(data)
+}
+
+async function getTracksFromUrl (url: string, opts?: RequestInit): Promise<Track[]> {
+  const data = await getData(url, opts)
+  return getTracks(data)
+}
+
+async function getDetails (url: string, opts?: RequestInit): Promise<Details> {
+  const data = await getData(url, opts)
   return {
-    getLink,
-    getData,
-    getPreview: (url: string, opts?: any): Promise<Preview> =>
-      getData(url, opts).then(getPreview),
-    getTracks: (url: string, opts?: any): Promise<Track[]> =>
-      getData(url, opts).then(getTracks),
-    getDetails: (url: string, opts?: any): Promise<Details> =>
-      getData(url, opts).then(data => ({
-        preview: getPreview(data),
-        tracks: getTracks(data)
-      }))
+    preview: getPreview(data),
+    tracks: getTracks(data)
   }
 }
 
-export { parseData, throwError }
+export {
+  getData,
+  getLink,
+  getPreviewFromUrl as getPreview,
+  getTracksFromUrl as getTracks,
+  getDetails,
+  parseData,
+  throwError
+}

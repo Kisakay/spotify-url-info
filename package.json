@@ -7,7 +7,6 @@
   "private": false,
   "devDependencies": {
     "@types/bun": "latest",
-    "isomorphic-unfetch": "^4.0.2",
     "map-values-deep": "^1.0.2"
   },
   "peerDependencies": {
