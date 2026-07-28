@@ -1,11 +1,25 @@
-# spotify-url-info-ts-ts
+# spotify-url-info-ts
 
 > Get metadata from Spotify URLs. Written in TypeScript, distributed as ESM.
 
 ## Install
 
+Install directly from GitHub:
+
 ```bash
-npm install spotify-url-info-ts
+npm install github:Kisakay/spotify-url-info-ts
+```
+
+or with Bun:
+
+```bash
+bun add github:Kisakay/spotify-url-info-ts
+```
+
+You can also install a specific version using a Git tag:
+
+```bash
+npm install github:Kisakay/spotify-url-info-ts#v1.0.0
 ```
 
 ## Usage
@@ -13,32 +27,38 @@ npm install spotify-url-info-ts
 You need to provide a `fetch` implementation:
 
 ```ts
-import fetch from 'isomorphic-unfetch'
-import spotifyUrlInfo from 'spotify-url-info-ts'
+import fetch from "isomorphic-unfetch";
+import spotifyUrlInfo from "spotify-url-info-ts";
 
-const { getData, getPreview, getTracks, getDetails } = spotifyUrlInfo(fetch)
+const { getData, getPreview, getTracks, getDetails } = spotifyUrlInfo(fetch);
 ```
 
 There are four functions:
 
-- **getData** — full data, close to the shape returned by the Spotify API.
-- **getPreview** — normalized fields (title, artist, image, audio, link...), same shape regardless of resource type (track, album, artist, playlist).
-- **getTracks** — array of tracks (max 100), raw shape from Spotify.
-- **getDetails** — both `getPreview` and `getTracks` in a single request.
+* **getData** — full data, close to the shape returned by the Spotify API.
+* **getPreview** — normalized fields (title, artist, image, audio, link...), same shape regardless of resource type (track, album, artist, playlist).
+* **getTracks** — array of tracks (max 100), raw shape from Spotify.
+* **getDetails** — both `getPreview` and `getTracks` in a single request.
 
 All methods take a Spotify URL as the first argument:
 
 ```ts
-const data = await getPreview('https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas')
+const data = await getPreview(
+  "https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas"
+);
 ```
 
 An optional second argument lets you pass fetch options:
 
 ```ts
 const data = await getPreview(
-  'https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas',
-  { headers: { 'user-agent': 'googlebot' } }
-)
+  "https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas",
+  {
+    headers: {
+      "user-agent": "googlebot",
+    },
+  }
+);
 ```
 
 Example output:
@@ -58,7 +78,23 @@ Example output:
 }
 ```
 
-A field you can't retrieve will be `undefined`. There's no strict guarantee on the shape of this data since it depends on scraping Spotify's embed pages — handle it defensively.
+A field you can't retrieve will be `undefined`. There is no strict guarantee on the shape of this data since it depends on scraping Spotify's embed pages — handle it defensively.
+
+## Versioning
+
+This package is distributed through GitHub releases and tags.
+
+To use a stable version:
+
+```bash
+npm install github:Kisakay/spotify-url-info-ts#v1.0.0
+```
+
+Latest development version:
+
+```bash
+npm install github:Kisakay/spotify-url-info-ts#main
+```
 
 ## Note
 
