@@ -33,6 +33,6 @@ test("getting data for a deleted spotify url should return rejection", async () 
 
 	await expect(getData(url)).rejects.toThrow(
 		"Couldn't find any data in embed page that we know how to parse.\n" +
-		"Please report the problem at https://github.com/Kisakay/spotify-url-info-ts/issues."
+		"Please report the problem at https://github.com/Kisakay/spotify-url-info/issues."
 	);
 });

@@ -11,7 +11,7 @@ test("error provides details about next steps", () => {
 
 		expect((error as Error).message).toBe(
 			"Couldn't find scripts to get the data.\n" +
-			"Please report the problem at https://github.com/Kisakay/spotify-url-info-ts/issues."
+			"Please report the problem at https://github.com/Kisakay/spotify-url-info/issues."
 		);
 	}
 });

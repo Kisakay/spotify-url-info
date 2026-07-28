@@ -15,7 +15,7 @@ const TYPE: Record<string, SpotifyType> = {
 
 const ERROR = {
   REPORT:
-    'Please report the problem at https://github.com/Kisakay/spotify-url-info-ts/issues.',
+    'Please report the problem at https://github.com/Kisakay/spotify-url-info/issues.',
   NOT_DATA: "Couldn't find any data in embed page that we know how to parse.",
   NOT_SCRIPTS: "Couldn't find scripts to get the data."
 }
