@@ -1,65 +1,47 @@
-<div align="center">
-  <img src="https://github.com/microlinkhq/cdn/raw/master/dist/logo/banner.png#gh-light-mode-only" alt="microlink logo">
-  <img src="https://github.com/microlinkhq/cdn/raw/master/dist/logo/banner-dark.png#gh-dark-mode-only" alt="microlink logo">
-  <br>
-  <br>
-</div>
+# spotify-url-info-ts-ts
 
-![Last version](https://img.shields.io/github/tag/microlinkhq/spotify-url-info.svg?style=flat-square)
-[![Coverage Status](https://img.shields.io/coveralls/microlinkhq/spotify-url-info.svg?style=flat-square)](https://coveralls.io/github/microlinkhq/spotify.url-info)
-[![NPM Status](https://img.shields.io/npm/dm/spotify-url-info.svg?style=flat-square)](https://www.npmjs.org/package/spotify-url-info)
-
-> Get metadata from Spotify URLs.
+> Get metadata from Spotify URLs. Written in TypeScript, distributed as ESM.
 
 ## Install
 
 ```bash
-npm install spotify-url-info
+npm install spotify-url-info-ts
 ```
 
 ## Usage
 
-In order to use the library, you have to provide the fetch agent to use:
+You need to provide a `fetch` implementation:
 
-```js
-const fetch = require('isomorphic-unfetch')
-const { getData, getPreview, getTracks, getDetails } =
-  require('spotify-url-info')(fetch)
+```ts
+import fetch from 'isomorphic-unfetch'
+import spotifyUrlInfo from 'spotify-url-info-ts'
+
+const { getData, getPreview, getTracks, getDetails } = spotifyUrlInfo(fetch)
 ```
 
 There are four functions:
 
-- **getData**<br/>
-  Provides the full available data, in a shape that is very similar to [what the spotify API returns](https://developer.spotify.com/documentation/web-api/reference/object-model/).
+- **getData** — full data, close to the shape returned by the Spotify API.
+- **getPreview** — normalized fields (title, artist, image, audio, link...), same shape regardless of resource type (track, album, artist, playlist).
+- **getTracks** — array of tracks (max 100), raw shape from Spotify.
+- **getDetails** — both `getPreview` and `getTracks` in a single request.
 
-- **getPreview** <br/>
-  Always returns the same fields for different types of resources (album, artist, playlist, track). The preview track is the first in the Album, Playlist, etc.
+All methods take a Spotify URL as the first argument:
 
-- **getTracks** <br/>
-  Returns array with tracks. This data is passed on straight from spotify, so the shape could change.Only the first 100 tracks will be returned.
+```ts
+const data = await getPreview('https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas')
+```
 
-- **getDetails** <br/>
-  Returns both the preview and tracks. Should be used if you require information from both of them so that only one request is made.
+An optional second argument lets you pass fetch options:
 
-All the methods receive a Spotify URL (play. or open.) as first argument:
-
-```js
-getPreview('https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas').then(data =>
-  console.log(data)
+```ts
+const data = await getPreview(
+  'https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas',
+  { headers: { 'user-agent': 'googlebot' } }
 )
 ```
 
-Additionally, you can provide fetch agent options as second argument:
-
-```js
-getPreview('https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas', {
-  headers: {
-    'user-agent': 'googlebot'
-  }
-}).then(data => console.log(data))
-```
-
-It returns back the information related to the Spotify URL:
+Example output:
 
 ```json
 {
@@ -68,7 +50,7 @@ It returns back the information related to the Spotify URL:
   "track": "Immaterial",
   "artist": "SOPHIE",
   "image": "https://i.scdn.co/image/d6f496a6708d22a2f867e5acb84afb0eb0b07bc1",
-  "audio": "https://p.scdn.co/mp3-preview/6be8eb12ff18ae09b7a6d38ff1e5327fd128a74e?cid=162b7dc01f3a4a2ca32ed3cec83d1e02",
+  "audio": "https://p.scdn.co/mp3-preview/6be8eb12ff18ae09b7a6d38ff1e5327fd128a74e",
   "link": "https://open.spotify.com/track/5nTtCOCds6I0PHMNtqelas",
   "embed": "https://embed.spotify.com/?uri=spotify:track:5nTtCOCds6I0PHMNtqelas",
   "date": "2018-06-15T00:00:00.000Z",
@@ -76,13 +58,12 @@ It returns back the information related to the Spotify URL:
 }
 ```
 
-When a field can't be retrieved, the value will be `undefined`.
+A field you can't retrieve will be `undefined`. There's no strict guarantee on the shape of this data since it depends on scraping Spotify's embed pages — handle it defensively.
 
-There are no guarantees about the shape of this data, because it varies with different media and scraping methods. Handle it carefully.
+## Note
+
+This version has been reviewed and typed by Claude: types added throughout, error handling fixed, and packaged as ESM/TypeScript.
 
 ## License
 
-**spotify-url-info** © [microlink.io](https://microlink.io), released under the [MIT](https://github.com/microlinkhq/spotify-url-info/blob/master/LICENSE.md) License.<br>
-Authored by [Karl Sander](https://github.com/karlsander) and maintained by [Kiko Beats](https://kikobeats.com) with help from [contributors](https://github.com/microlinkhq/spotify-url-info/contributors).
-
-> [microlink.io](https://microlink.io) · GitHub [microlink.io](https://github.com/microlinkhq) · X [@microlinkhq](https://x.com/microlinkhq)
+MIT
