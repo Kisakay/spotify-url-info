@@ -1,5 +1,5 @@
 {
-  "name": "spotify-url-info-ts-ts",
+  "name": "spotify-url-info",
   "description": "Get metadata from Spotify URLs (TypeScript ESM with Bun)",
   "module": "src/index.ts",
   "type": "module",
