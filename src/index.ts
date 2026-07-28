@@ -1,235 +1,246 @@
-import * as spotifyURI from 'spotify-uri'
-import { parse } from 'himalaya'
+import * as spotifyURI from "spotify-uri";
+import { parse } from "himalaya";
 
 // ---- Types ----
 
-type SpotifyType = 'album' | 'artist' | 'episode' | 'playlist' | 'track'
+type SpotifyType = "album" | "artist" | "episode" | "playlist" | "track";
 
 const TYPE: Record<string, SpotifyType> = {
-  ALBUM: 'album',
-  ARTIST: 'artist',
-  EPISODE: 'episode',
-  PLAYLIST: 'playlist',
-  TRACK: 'track'
-}
+  ALBUM: "album",
+  ARTIST: "artist",
+  EPISODE: "episode",
+  PLAYLIST: "playlist",
+  TRACK: "track",
+};
 
 const ERROR = {
   REPORT:
-    'Please report the problem at https://github.com/Kisakay/spotify-url-info/issues.',
+    "Please report the problem at https://github.com/Kisakay/spotify-url-info/issues.",
   NOT_DATA: "Couldn't find any data in embed page that we know how to parse.",
-  NOT_SCRIPTS: "Couldn't find scripts to get the data."
-}
+  NOT_SCRIPTS: "Couldn't find scripts to get the data.",
+};
 
-const SUPPORTED_TYPES: SpotifyType[] = Object.values(TYPE)
+const SUPPORTED_TYPES: SpotifyType[] = Object.values(TYPE);
 
 // himalaya doesn't ship official types, so we declare the minimal shape we use
 interface HimalayaAttribute {
-  key: string
-  value: string
+  key: string;
+  value: string;
 }
 
 interface HimalayaTextNode {
-  type: 'text'
-  content: string
+  type: "text";
+  content: string;
 }
 
 interface HimalayaElement {
-  type: 'element'
-  tagName: string
-  attributes: HimalayaAttribute[]
-  children: (HimalayaElement | HimalayaTextNode)[]
+  type: "element";
+  tagName: string;
+  attributes: HimalayaAttribute[];
+  children: (HimalayaElement | HimalayaTextNode)[];
 }
 
-type HimalayaNode = HimalayaElement | HimalayaTextNode
+type HimalayaNode = HimalayaElement | HimalayaTextNode;
 
 // Minimal shape of the data returned by Spotify's embed page
-interface SpotifyImage {
-  url: string
-  width?: number
-  height?: number
+export interface SpotifyImage {
+  url: string;
+  width?: number;
+  height?: number;
 }
 
-interface SpotifyArtist {
-  name: string
+export interface SpotifyArtist {
+  name: string;
 }
 
-interface SpotifyShow {
-  publisher: string
+export interface SpotifyShow {
+  publisher: string;
 }
 
-interface SpotifyTrackData {
-  title: string
-  subtitle?: string
-  duration?: number
-  isPlayable?: boolean
-  audioPreview?: { url: string }
-  uri: string
-  artists?: SpotifyArtist[]
-  show?: SpotifyShow
-  description?: string
+export interface SpotifyTrackData {
+  title: string;
+  subtitle?: string;
+  duration?: number;
+  isPlayable?: boolean;
+  audioPreview?: { url: string };
+  uri: string;
+  artists?: SpotifyArtist[];
+  show?: SpotifyShow;
+  description?: string;
 }
 
-interface SpotifyEntityData {
-  type: string
-  name: string
-  uri: string
-  subtitle?: string
-  description?: string
-  releaseDate?: { isoString?: string }
-  release_date?: string
-  coverArt?: { sources: SpotifyImage[] }
-  images?: SpotifyImage[]
-  visualIdentity?: { image: SpotifyImage[] }
-  trackList?: SpotifyTrackData[]
-  [key: string]: unknown
+export interface SpotifyEntityData {
+  type: string;
+  name: string;
+  uri: string;
+  subtitle?: string;
+  description?: string;
+  releaseDate?: { isoString?: string };
+  release_date?: string;
+  coverArt?: { sources: SpotifyImage[] };
+  images?: SpotifyImage[];
+  visualIdentity?: { image: SpotifyImage[] };
+  trackList?: SpotifyTrackData[];
+  [key: string]: unknown;
 }
 
-interface Track {
-  artist: string | string[] | undefined
-  duration: number | undefined
-  name: string
-  previewUrl: string | undefined
-  uri: string
+export interface Track {
+  artist: string | string[] | undefined;
+  duration: number | undefined;
+  name: string;
+  previewUrl: string | undefined;
+  uri: string;
 }
 
-interface Preview {
-  date: string | undefined
-  title: string
-  type: string
-  track: string
-  description: string | undefined
-  artist: string | string[] | undefined
-  image: string | undefined
-  audio: string | undefined
-  link: string
-  embed: string
+export interface Preview {
+  date: string | undefined;
+  title: string;
+  type: string;
+  track: string;
+  description: string | undefined;
+  artist: string | string[] | undefined;
+  image: string | undefined;
+  audio: string | undefined;
+  link: string;
+  embed: string;
 }
 
-interface Details {
-  preview: Preview
-  tracks: Track[]
+export interface Details {
+  preview: Preview;
+  tracks: Track[];
 }
 
 class SpotifyParseError extends TypeError {
-  html?: string
+  html?: string;
 }
 
 // ---- Helpers ----
 
 const throwError = (message: string, html?: string): never => {
-  const error = new SpotifyParseError(`${message}\n${ERROR.REPORT}`)
-  error.html = html
-  throw error
-}
+  const error = new SpotifyParseError(`${message}\n${ERROR.REPORT}`);
+  error.html = html;
+  throw error;
+};
 
 const parseData = (html: string): SpotifyEntityData => {
-  const embed = parse(html) as HimalayaNode[]
+  const embed = parse(html) as HimalayaNode[];
 
   const htmlNode = embed.find(
-    (el): el is HimalayaElement => el.type === 'element' && el.tagName === 'html'
-  )
-  if (htmlNode === undefined) return throwError(ERROR.NOT_SCRIPTS, html)
+    (el): el is HimalayaElement =>
+      el.type === "element" && el.tagName === "html",
+  );
+  if (htmlNode === undefined) return throwError(ERROR.NOT_SCRIPTS, html);
 
   const bodyNode = htmlNode.children.find(
-    (el): el is HimalayaElement => el.type === 'element' && el.tagName === 'body'
-  )
+    (el): el is HimalayaElement =>
+      el.type === "element" && el.tagName === "body",
+  );
 
   const scripts: HimalayaElement[] = (bodyNode?.children ?? []).filter(
-    (el): el is HimalayaElement => el.type === 'element' && el.tagName === 'script'
-  )
+    (el): el is HimalayaElement =>
+      el.type === "element" && el.tagName === "script",
+  );
 
-  let script = scripts.find(script =>
-    script.attributes.some(({ value }) => value === 'resource')
-  )
+  let script = scripts.find((script) =>
+    script.attributes.some(({ value }) => value === "resource"),
+  );
 
   if (script !== undefined) {
-    const content = (script.children[0] as HimalayaTextNode).content
+    const content = (script.children[0] as HimalayaTextNode).content;
     const data = JSON.parse(
-      Buffer.from(content, 'base64').toString('utf-8')
-    ) as SpotifyEntityData
-    return normalizeData({ data })
+      Buffer.from(content, "base64").toString("utf-8"),
+    ) as SpotifyEntityData;
+    return normalizeData({ data });
   }
 
-  script = scripts.find(script =>
-    script.attributes.some(({ value }) => value === 'initial-state')
-  )
+  script = scripts.find((script) =>
+    script.attributes.some(({ value }) => value === "initial-state"),
+  );
 
   if (script !== undefined) {
-    const content = (script.children[0] as HimalayaTextNode).content
-    const parsed = JSON.parse(Buffer.from(content, 'base64').toString('utf-8'))
-    const data = parsed.data.entity as SpotifyEntityData
-    return normalizeData({ data })
+    const content = (script.children[0] as HimalayaTextNode).content;
+    const parsed = JSON.parse(Buffer.from(content, "base64").toString("utf-8"));
+    const data = parsed.data.entity as SpotifyEntityData;
+    return normalizeData({ data });
   }
 
-  script = scripts.find(script =>
-    script.attributes.some(({ value }) => value === '__NEXT_DATA__')
-  )
+  script = scripts.find((script) =>
+    script.attributes.some(({ value }) => value === "__NEXT_DATA__"),
+  );
 
   if (script !== undefined) {
-    const content = (script.children[0] as HimalayaTextNode).content
-    const string = Buffer.from(content).toString('utf-8')
+    const content = (script.children[0] as HimalayaTextNode).content;
+    const string = Buffer.from(content).toString("utf-8");
     const data = JSON.parse(string).props?.pageProps?.state?.data?.entity as
       | SpotifyEntityData
-      | undefined
-    if (data !== undefined) return normalizeData({ data })
+      | undefined;
+    if (data !== undefined) return normalizeData({ data });
   }
 
-  return throwError(ERROR.NOT_DATA, html)
-}
+  return throwError(ERROR.NOT_DATA, html);
+};
 
-function getParsedUrl (url: string): string {
+function getParsedUrl(url: string): string {
   try {
-    const parsedURL = spotifyURI.parse(url)
-    if (!parsedURL.type) throw new TypeError()
-    return spotifyURI.formatEmbedURL(parsedURL)
+    const parsedURL = spotifyURI.parse(url);
+    if (!parsedURL.type) throw new TypeError();
+    return spotifyURI.formatEmbedURL(parsedURL);
   } catch (_) {
-    throw new TypeError(`Couldn't parse '${url}' as valid URL`)
+    throw new TypeError(`Couldn't parse '${url}' as valid URL`);
   }
 }
 
 const getImages = (data: SpotifyEntityData): SpotifyImage[] | undefined =>
-  data.coverArt?.sources || data.images || data.visualIdentity?.image
+  data.coverArt?.sources || data.images || data.visualIdentity?.image;
 
 const getDate = (data: SpotifyEntityData): string | undefined =>
-  data.releaseDate?.isoString || data.release_date
+  data.releaseDate?.isoString || data.release_date;
 
-const getLink = (data: SpotifyEntityData): string => spotifyURI.formatOpenURL(data.uri)
+const getLink = (data: SpotifyEntityData): string =>
+  spotifyURI.formatOpenURL(data.uri);
 
-function getArtistTrack (track: SpotifyTrackData): string | string[] {
+function getArtistTrack(track: SpotifyTrackData): string | string[] {
   return track.show
     ? track.show.publisher
     : ([] as SpotifyArtist[])
         .concat(track.artists ?? [])
         .filter(Boolean)
-        .map(a => a.name)
+        .map((a) => a.name)
         .reduce(
           (acc: string, name: string, index: number, array: string[]) =>
             index === 0
               ? name
-              : acc + (array.length - 1 === index ? ' & ' : ', ') + name,
-          ''
-        )
+              : acc + (array.length - 1 === index ? " & " : ", ") + name,
+          "",
+        );
 }
 
 const getTracks = (data: SpotifyEntityData): Track[] =>
-  data.trackList ? data.trackList.map(toTrack) : [toTrack(data as unknown as SpotifyTrackData)]
+  data.trackList
+    ? data.trackList.map(toTrack)
+    : [toTrack(data as unknown as SpotifyTrackData)];
 
-function getPreview (data: SpotifyEntityData): Preview {
-  const [track] = getTracks(data)
-  const date = getDate(data)
+function getPreview(data: SpotifyEntityData): Preview {
+  const [track] = getTracks(data);
+  const date = getDate(data);
 
   return {
     date: date ? new Date(date).toISOString() : date,
     title: data.name,
     type: data.type,
     track: track.name,
-    description: data.description || data.subtitle || (track as unknown as SpotifyTrackData).description,
+    description:
+      data.description ||
+      data.subtitle ||
+      (track as unknown as SpotifyTrackData).description,
     artist: track.artist,
-    image: getImages(data)?.reduce((a, b) => ((a.width ?? 0) > (b.width ?? 0) ? a : b))?.url,
+    image: getImages(data)?.reduce((a, b) =>
+      (a.width ?? 0) > (b.width ?? 0) ? a : b,
+    )?.url,
     audio: track.previewUrl,
     link: getLink(data),
-    embed: `https://embed.spotify.com/?uri=${data.uri}`
-  }
+    embed: `https://embed.spotify.com/?uri=${data.uri}`,
+  };
 }
 
 const toTrack = (track: SpotifyTrackData): Track => ({
@@ -237,51 +248,64 @@ const toTrack = (track: SpotifyTrackData): Track => ({
   duration: track.duration,
   name: track.title,
   previewUrl: track.isPlayable ? track.audioPreview?.url : undefined,
-  uri: track.uri
-})
+  uri: track.uri,
+});
 
-const normalizeData = ({ data }: { data: SpotifyEntityData }): SpotifyEntityData => {
+const normalizeData = ({
+  data,
+}: {
+  data: SpotifyEntityData;
+}): SpotifyEntityData => {
   if (!data || !data.type || !data.name) {
-    throw new Error("Data doesn't seem to be of the right shape to parse")
+    throw new Error("Data doesn't seem to be of the right shape to parse");
   }
 
   if (!SUPPORTED_TYPES.includes(data.type as SpotifyType)) {
     throw new Error(
-      `Not an ${SUPPORTED_TYPES.join(', ')}. Only these types can be parsed`
-    )
+      `Not an ${SUPPORTED_TYPES.join(", ")}. Only these types can be parsed`,
+    );
   }
 
-  data.type = data.uri.split(':')[1]
+  data.type = data.uri.split(":")[1];
 
-  return data
-}
+  return data;
+};
 
 // ---- Public API ----
 // Uses the runtime's native `fetch` (Node >= 18 or Bun), no factory/DI needed.
 
-async function getData (url: string, opts?: RequestInit): Promise<SpotifyEntityData> {
-  const embedURL = getParsedUrl(url)
-  const response = await fetch(embedURL, opts)
-  const text = await response.text()
-  return parseData(text)
+async function getData(
+  url: string,
+  opts?: RequestInit,
+): Promise<SpotifyEntityData> {
+  const embedURL = getParsedUrl(url);
+  const response = await fetch(embedURL, opts);
+  const text = await response.text();
+  return parseData(text);
 }
 
-async function getPreviewFromUrl (url: string, opts?: RequestInit): Promise<Preview> {
-  const data = await getData(url, opts)
-  return getPreview(data)
+async function getPreviewFromUrl(
+  url: string,
+  opts?: RequestInit,
+): Promise<Preview> {
+  const data = await getData(url, opts);
+  return getPreview(data);
 }
 
-async function getTracksFromUrl (url: string, opts?: RequestInit): Promise<Track[]> {
-  const data = await getData(url, opts)
-  return getTracks(data)
+async function getTracksFromUrl(
+  url: string,
+  opts?: RequestInit,
+): Promise<Track[]> {
+  const data = await getData(url, opts);
+  return getTracks(data);
 }
 
-async function getDetails (url: string, opts?: RequestInit): Promise<Details> {
-  const data = await getData(url, opts)
+async function getDetails(url: string, opts?: RequestInit): Promise<Details> {
+  const data = await getData(url, opts);
   return {
     preview: getPreview(data),
-    tracks: getTracks(data)
-  }
+    tracks: getTracks(data),
+  };
 }
 
 export {
@@ -291,5 +315,5 @@ export {
   getTracksFromUrl as getTracks,
   getDetails,
   parseData,
-  throwError
-}
+  throwError,
+};
