@@ -1,4 +1,4 @@
-# spotify-url-info
+# spotify-metadata
 
 > Get metadata from Spotify URLs. Written in TypeScript, distributed as ESM.
 
@@ -7,19 +7,19 @@
 Install directly from GitHub:
 
 ```bash
-npm install github:Kisakay/spotify-url-info
+npm install github:kisastractors/spotify-metadata
 ```
 
 or with Bun:
 
 ```bash
-bun add github:Kisakay/spotify-url-info
+bun add github:kisastractors/spotify-metadata
 ```
 
 You can also install a specific version using a Git tag:
 
 ```bash
-npm install github:Kisakay/spotify-url-info#v1.0.0
+npm install github:kisastractors/spotify-metadata#v1.0.0
 ```
 
 ## Usage
@@ -99,13 +99,13 @@ This package is distributed through GitHub releases and tags.
 To use a stable version:
 
 ```bash
-npm install github:Kisakay/spotify-url-info#v1.0.0
+npm install github:kisastractors/spotify-metadata#v1.0.0
 ```
 
 Latest development version:
 
 ```bash
-npm install github:Kisakay/spotify-url-info#main
+npm install github:kisastractors/spotify-metadata#main
 ```
 
 ## Note

@@ -1,5 +1,5 @@
 {
-  "name": "spotify-url-info",
+  "name": "spotify-metadata",
   "description": "Get metadata from Spotify URLs",
   "version": "1.4.0",
   "type": "module",
@@ -26,7 +26,7 @@
 
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kisakay/spotify-url-info.git"
+    "url": "git+https://github.com/kisastractors/spotify-metadata.git"
   },
 
   "keywords": [
