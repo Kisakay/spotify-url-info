@@ -1,5 +1,10 @@
 import * as spotifyURI from "spotify-uri";
-import { parse } from "himalaya";
+import {
+  parse,
+  type HimalayaElement,
+  type HimalayaTextNode,
+  type HimalayaNode,
+} from "himalaya";
 
 // ---- Types ----
 
@@ -21,26 +26,6 @@ const ERROR = {
 };
 
 const SUPPORTED_TYPES: SpotifyType[] = Object.values(TYPE);
-
-// himalaya doesn't ship official types, so we declare the minimal shape we use
-interface HimalayaAttribute {
-  key: string;
-  value: string;
-}
-
-interface HimalayaTextNode {
-  type: "text";
-  content: string;
-}
-
-interface HimalayaElement {
-  type: "element";
-  tagName: string;
-  attributes: HimalayaAttribute[];
-  children: (HimalayaElement | HimalayaTextNode)[];
-}
-
-type HimalayaNode = HimalayaElement | HimalayaTextNode;
 
 // Minimal shape of the data returned by Spotify's embed page
 export interface SpotifyImage {
@@ -123,7 +108,7 @@ const throwError = (message: string, html?: string): never => {
 };
 
 const parseData = (html: string): SpotifyEntityData => {
-  const embed = parse(html) as HimalayaNode[];
+  const embed = parse(html);
 
   const htmlNode = embed.find(
     (el): el is HimalayaElement =>
