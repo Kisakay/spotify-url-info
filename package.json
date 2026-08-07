@@ -1,7 +1,7 @@
 {
   "name": "spotify-metadata",
   "description": "Get metadata from Spotify URLs",
-  "version": "1.4.1"
+  "version": "1.4.1",
   "type": "module",
   "private": false,
 
